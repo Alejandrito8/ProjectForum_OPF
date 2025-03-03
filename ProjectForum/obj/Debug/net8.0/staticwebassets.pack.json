@@ -1,0 +1,41 @@
+{
+  "Files": [
+    {
+      "Id": "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/obj/Debug/net8.0/scopedcss/projectbundle/ProjectForum.bundle.scp.css",
+      "PackagePath": "staticwebassets/ProjectForum.bundle.scp.css"
+    },
+    {
+      "Id": "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/wwwroot/app.css",
+      "PackagePath": "staticwebassets/app.css"
+    },
+    {
+      "Id": "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/wwwroot/bootstrap/bootstrap.min.css",
+      "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css"
+    },
+    {
+      "Id": "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/wwwroot/bootstrap/bootstrap.min.css.map",
+      "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css.map"
+    },
+    {
+      "Id": "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/wwwroot/favicon.png",
+      "PackagePath": "staticwebassets/favicon.png"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.ProjectForum.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.ProjectForum.props",
+      "PackagePath": "build\\ProjectForum.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.ProjectForum.props",
+      "PackagePath": "buildMultiTargeting\\ProjectForum.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.ProjectForum.props",
+      "PackagePath": "buildTransitive\\ProjectForum.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
