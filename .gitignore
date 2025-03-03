@@ -536,5 +536,4 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
-/ProjectForum/obj/Debug/net8.0/ProjectForum.AssemblyInfo.cs
-/ProjectForum/obj/Debug/net8.0/ProjectForum.AssemblyInfoInputs.cache
+
