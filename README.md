@@ -4,7 +4,7 @@
 --- 
 
 
--------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------
 ### Tre användarscenarion utifrån strukturen:
 Användarscenarion utifrån struktur 1:
 | ID | Kategori | Scenario | Teststeg | Förv. Resultat | Faktiskt Resultat | Åtgärdsförslag |
