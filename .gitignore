@@ -538,3 +538,6 @@ FakesAssemblies/
 *.opt
 /ProjectForum/obj/Debug/net8.0/ProjectForum.AssemblyInfo.cs
 /ProjectForum/obj/Debug/net8.0/ProjectForum.AssemblyInfoInputs.cache
+/.vs/ProjectForum_OPF/FileContentIndex/2fe86f21-31fd-4e53-a86d-90fe15af8b49.vsidx
+/.vs/ProjectForum_OPF/FileContentIndex/c7876e3e-2f37-49ea-9f6b-2cf37632fa15.vsidx
+/.vs/ProjectForum_OPF/FileContentIndex/c7e0e3e9-1d79-4108-915a-77c4d1cc80d7.vsidx
