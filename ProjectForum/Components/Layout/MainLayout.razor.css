@@ -8,15 +8,26 @@ main {
     flex: 1;
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+/* added Login-container for layout like top-row */
+.Login-container {
+    background-color: #212529;
+    justify-content: flex-end;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.Login-container a {
+    color: white !important;
+    text-decoration: none; 
+    margin-right: 1.5rem;
+
 }
 
 .top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
+    background-color: #212529 ;
+    justify-content: flex-start;
+    height: 2.5rem;
     display: flex;
     align-items: center;
 }
@@ -25,11 +36,12 @@ main {
         white-space: nowrap;
         margin-left: 1.5rem;
         text-decoration: none;
+        color: white !important;
     }
 
     .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
-    }
+        text-decoration: none;
+    } 
 
     .top-row ::deep a:first-child {
         overflow: hidden;

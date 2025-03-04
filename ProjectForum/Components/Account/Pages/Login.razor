@@ -39,11 +39,13 @@
                     </label>
                 </div>
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                    <button type="submit" class="w-100 btn btn-dark">Log in</button>
                 </div>
                 <div>
                     <p>
+                        <br>
                         <a href="Account/ForgotPassword">Forgot your password?</a>
+                        
                     </p>
                     <p>
                         <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
