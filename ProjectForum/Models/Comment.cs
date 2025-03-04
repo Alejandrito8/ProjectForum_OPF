@@ -14,5 +14,7 @@ public Post Post {get; set;}
 
 public int UserId {get; set;}
 public ApplicationUser User {get; set;}
-public List<Comment> Comments {get; set;} // ?? comment on a comment and how Do i connect them
+public int CommentId {get; set;}
+public Comment ParentComment {get; set;}
+public List<Comment> Replies {get; set;} // ?? comment on a comment and how Do i connect them
 }

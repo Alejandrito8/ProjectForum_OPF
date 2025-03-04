@@ -1,5 +1,5 @@
 using System;
-
+using ProjectForum.Data;
 namespace ProjectForum.Models;
 
 public class Post
@@ -11,8 +11,6 @@ public DateTime PublishedOn {get; set;}
 
 public int UserId {get; set;}
 public ApplicationUser User {get; set;}
-
-public int CatagoryId {get; set;}
 public Catagory Catagory {get; set;}
 public List<Comment> Comments {get; set;} 
 
