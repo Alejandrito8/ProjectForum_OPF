@@ -1,17 +1,73 @@
 ﻿@inherits LayoutComponentBase
-@* create a container for the login and register *@
+@implements IDisposable
+
+@inject NavigationManager NavigationManager
+
+@* create a container for the login and register and for the layout *@
 <div class="Login-container">
-    <a href="/Account/Login" class="btn btn-dark">Login</a>
-    <a href="/Account/Register" class="btn btn-dark">Register</a>
+     <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Manage">
+                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <button type="submit" class="btn btn btn-dark nav-link">
+                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                        </button>
+                    </form>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Register">
+                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Login">
+                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+     </AuthorizeView>
+ 
 </div>
 
-<header class="top-row"> 
+<div class="top-row"> 
     <nav>
-            <li style="display: inline; margin-right: 20px;"><a href="/"class="btn btn-dark">Home</a></li>
-            <li style="display: inline; margin-right: 20px;"><a href="/"class="btn btn-dark">Auth Required</a></li>
-            <li style="display: inline;"><a href="https://learn.microsoft.com/aspnet/core/" target="_blank"class="btn btn-dark">About</a></li>
+        <ul style="display: flex; align-items: center; gap: 20px; list-style: none; padding: 0; margin: 0;">
+            <li><a href="/" class="btn btn-dark">Home</a></li>
+
+        <div class="nav-item px-3">
+            <NavLink class="btn btn-dark" href="/categories">
+                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="btn btn-dark" href="auth">
+                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
+            </NavLink>
+        </div>            
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <li>
+                        <NavLink class="btn btn-dark" href="admin">
+                            <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Admin
+                        </NavLink>
+                    </li>
+                </Authorized>
+            </AuthorizeView>
+            <li><a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="btn btn-dark">About</a></li>
+        </ul>
     </nav>
-</header>
+</div>
+
 
 <main>
     <article class="content px-4">
@@ -19,8 +75,31 @@
     </article>
 </main>
 
+
 <div id="blazor-error-ui">
     An unhandled error has occurred.
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div> 
+
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
