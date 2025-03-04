@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/rebeckakorkis/Documents/Objektorienterad programmering/OPF2/ProjectForum_OPF/ProjectForum/ProjectForum.csproj": {}
+    "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/ProjectForum.csproj": {}
   },
   "projects": {
-    "/Users/rebeckakorkis/Documents/Objektorienterad programmering/OPF2/ProjectForum_OPF/ProjectForum/ProjectForum.csproj": {
+    "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/ProjectForum.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/rebeckakorkis/Documents/Objektorienterad programmering/OPF2/ProjectForum_OPF/ProjectForum/ProjectForum.csproj",
+        "projectUniqueName": "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/ProjectForum.csproj",
         "projectName": "ProjectForum",
-        "projectPath": "/Users/rebeckakorkis/Documents/Objektorienterad programmering/OPF2/ProjectForum_OPF/ProjectForum/ProjectForum.csproj",
-        "packagesPath": "/Users/rebeckakorkis/.nuget/packages/",
-        "outputPath": "/Users/rebeckakorkis/Documents/Objektorienterad programmering/OPF2/ProjectForum_OPF/ProjectForum/obj/",
+        "projectPath": "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/ProjectForum.csproj",
+        "packagesPath": "/Users/adonaiyohannes/.nuget/packages/",
+        "outputPath": "/Users/adonaiyohannes/Desktop/DotNet Projekts/OPGF/Code/Projekt/ProjectForum_OPF/ProjectForum/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/rebeckakorkis/.nuget/NuGet/NuGet.Config"
+          "/Users/adonaiyohannes/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -53,7 +53,7 @@
             },
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
-              "version": "[8.0.12, )"
+              "version": "[9.0.2, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "target": "Package",
@@ -79,7 +79,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.401/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
