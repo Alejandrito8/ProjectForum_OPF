@@ -9,9 +9,9 @@ public string Title {get; set;}
 public string Content {get; set;}
 public DateTime PublishedOn {get; set;} 
 
-public int UserId {get; set;}
+public string? UserId {get; set;}
 public ApplicationUser User {get; set;}
 public Category Category {get; set;}
-public List<Comment> Comments {get; set;} 
+public List<Comment> Comments {get; set;} = new List<Comment>();
 
 }
