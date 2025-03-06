@@ -1,0 +1,53 @@
+@page "/forum/{category}"
+@using System.Globalization
+@inject NavigationManager Navigation
+@inject ApplicationDbContext DbContext
+@using ProjectForum.Models
+@using ProjectForum.Data
+@using Microsoft.EntityFrameworkCore
+
+<h3>@category Forum</h3>
+<button class="btn btn-primary" @onclick="CreatePost">Create New Post</button>
+
+@if (posts == null)
+{
+    <p>Loading posts...</p>
+}
+else
+{
+    @foreach (var post in posts)
+    {
+        <div class="card my-2">
+            <div class="card-body">
+                <h5 class="card-title">@post.Title</h5>
+                <p class="card-text">@post.Content</p>
+                <small class="text-muted">Posted by @post.User?.UserName on @post.PublishedOn.ToString("g", CultureInfo.InvariantCulture)</small>
+                <br>
+                <button class="btn btn-link" @onclick="() => NavigateToPost(post.Id)">View Comments</button>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public Category category { get; set; }
+    private List<Post>? posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await DbContext.Posts
+            .Where(p => p.Category == category)
+            .Include(p => p.User)
+            .ToListAsync();
+    }
+
+    private void NavigateToPost(int postId)
+    {
+        Navigation.NavigateTo($"/post/{postId}");
+    }
+
+    private void CreatePost()
+    {
+        Navigation.NavigateTo($"/create-post/{category}");
+    }
+}

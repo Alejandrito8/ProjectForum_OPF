@@ -11,7 +11,7 @@ public DateTime PublishedOn {get; set;}
 
 public int UserId {get; set;}
 public ApplicationUser User {get; set;}
-public Category Catagory {get; set;}
+public Category Category {get; set;}
 public List<Comment> Comments {get; set;} 
 
 }
