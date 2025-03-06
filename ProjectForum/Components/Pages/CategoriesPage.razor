@@ -1,0 +1,21 @@
+﻿@page "/categories"
+
+<h3>Categories</h3>
+<br>
+<div class="categories-menu">
+    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Sport)">Sport</button>
+    <button class="btn btn-light" @onclick="() => NavigateToCategory(Category.Economy)">Economy</button>
+    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Science)">Science</button>
+    <button class="btn btn-light" @onclick="() => NavigateToCategory(Category.FoodAndDrinks)">Food & Drinks</button>
+    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Other)">Other</button>
+</div>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private void NavigateToCategory(Category category)
+    {
+        Navigation.NavigateTo($"/forum/{category}");
+    }
+}
+

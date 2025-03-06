@@ -11,3 +11,19 @@
 <AuthorizeView>
     Hello @context.User.Identity?.Name!
 </AuthorizeView>
+
+<p>You as an admin can now see and edit all comments on the forum</p>
+
+
+
+@* Make so that admin can see all comments  *@
+@* Create comment settings  *@
+
+
+@* @if (selectedUser != null) 
+    {
+        <h4>Selected User: @selectedUser.Email</h4>
+        <button class="btn btn-success btn-sm" @onclick="RemoveComment">Remove Comment</button>
+        <button class="btn btn-warning btn-sm" @onclick="BlockProfile">Block Profile</button>
+    }
+} *@
