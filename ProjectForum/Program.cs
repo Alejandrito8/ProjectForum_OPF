@@ -4,8 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectForum.Components.Account;
 using ProjectForum.Components;
 using ProjectForum.Data;
-using ProjectForum.Models;
-using ProjectForum.Components.Pages;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
