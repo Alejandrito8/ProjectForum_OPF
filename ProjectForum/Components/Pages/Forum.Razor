@@ -1,9 +1,109 @@
-@page "/forum/{category}" 
-<h3>Forum</h3>
+@using ProjectForum.Data
+@using ProjectForum.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@inject PostService PostService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
 
-@code 
+@attribute [Authorize]
+
+@page "/forum/{categoryText}"
+
+<h3>@category Forum</h3>
+
+@if (posts == null || posts.Count == 0)
 {
-
+    <p>No posts yet in this category. Be the first to post!</p>
+}
+else
+{
+    @foreach (var post in posts)
+    {
+        <div class="post">
+            <h4>@post.Title</h4>
+            <p>@post.Content</p>
+            <p><small>Published on @post.PublishedOn.ToString("yyyy-MM-dd HH:mm") by @post.User.UserName</small></p>
+            <button class="btn btn-danger" @onclick="() => DeletePost(post.Id)">Delete</button>
+            <button class="btn btn-primary" @onclick="() => NavigateToPost(post.Id)">View</button>
+        </div>
+    }
 }
 
-@* Här skrivs kod som ska köras när vi trycker på en av knapparna i CategoriesPage *@
+<h4>Create a new post</h4>
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p class="text-danger">@errorMessage</p>
+}
+
+<input type="text" @bind="newPost.Title" placeholder="Title" class="form-control" />
+<textarea @bind="newPost.Content" placeholder="Content" class="form-control"></textarea>
+<button class="btn btn-success" @onclick="CreatePost">Post</button>
+
+@code {
+    [Parameter] public string categoryText { get; set; }
+    private Category category;
+    private List<Post> posts = new();
+    private Post newPost = new();
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Enum.TryParse<Category>(categoryText, true, out var parsedCategory))
+        {
+            category = parsedCategory;
+            posts = await PostService.GetPostsByCategory(category);
+        }
+        else
+        {
+            Navigation.NavigateTo("/categories");
+        }
+    }
+
+    private async Task CreatePost()
+    {
+        errorMessage = string.Empty;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        newPost.PublishedOn = DateTime.Now;
+        newPost.UserId = user.Id;
+        newPost.Category = category;
+
+        var savedPost = await PostService.CreatePost(newPost);
+
+
+        posts.Add(new Post
+            {
+                Id = savedPost.Id, 
+                Title = newPost.Title,
+                Content = newPost.Content,
+                PublishedOn = newPost.PublishedOn,
+                User = user,
+                Category = category
+            });
+
+        newPost = new Post();
+        StateHasChanged();
+    }
+
+    private async Task DeletePost(int postId)
+    {
+        await PostService.DeletePost(postId);
+        posts.RemoveAll(p => p.Id == postId);
+        StateHasChanged();
+    }
+
+    private void NavigateToPost(int postId)
+    {
+        Navigation.NavigateTo($"/post/{postId}");
+    }
+}
