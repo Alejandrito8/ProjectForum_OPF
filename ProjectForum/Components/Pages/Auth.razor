@@ -1,11 +1,17 @@
 ﻿@page "/auth"
 
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
 
 @inject PostService PostService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
 @attribute [Authorize(Roles = "Admin")]
 
-<PageTitle>Auth</PageTitle>
+<PageTitle>Admin Settings</PageTitle>
 
 <h1>Welcome to the admin settings page!</h1>
 
@@ -13,6 +19,142 @@
     Hello @context.User.Identity?.Name!
 </AuthorizeView>
 
-<p>You as an admin can now see and edit all comments on the forum</p>
+<h5>You as an admin can now see and edit all comments on the forum</h5>
 
-@* Do so admin can see every post and handle it *@
+<div class="line"></div>
+
+<style>
+    .line {
+        border-top: 2px solid black;
+        width: 100%;
+        margin: 10px 0;
+    }
+</style>
+
+<div class="container">
+    @foreach (var category in Enum.GetValues(typeof(Category)).Cast<Category>())
+    {
+        <div class="category-section">
+            <h3>@category</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th><u>Post</u></th>
+                        <th><u>Comments</u></th>
+                        <th><u>Author</u></th>
+                        <th><u>Published</u></th>
+                        <th><u>Settings</u></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var post in Posts.Where(p => p.Category == category))
+                    {
+                        <tr>
+                            <td>@post.Title</td>
+                            <td>
+                                <ul>
+                                    @foreach (var comment in post.Comments)
+                                    {
+                                        <li>@comment.Content
+                                            <button @onclick="() => EditComment(comment.Id)" class="btn btn-primary btn-sm">Edit</button>
+                                            <button @onclick="() => DeleteComment(comment.Id)" class="btn btn-danger btn-sm">Delete</button>
+                                        </li>
+                                    }
+                                </ul>
+                            </td>
+                            <td>@post.User.FirstName @post.User.LastName</td>
+                            <td>@post.PublishedOn.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                <button @onclick="() => EditPost(post.Id)" class="btn btn-primary btn-sm">Edit Post</button>
+                                <button @onclick="() => DeletePost(post.Id)" class="btn btn-danger btn-sm">Delete Post</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Post> Posts = new List<Post>();
+    private string userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync(); 
+        var user = authenticationState.User;
+        userId = user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        // Fetch posts for each category
+        foreach (var category in Enum.GetValues(typeof(Category)).Cast<Category>())
+        {
+            var postsForCategory = await PostService.GetPostsByCategory(category);
+            Posts.AddRange(postsForCategory);
+        }
+    }
+     private async Task EditPost(int postId)
+    {
+        if (userId == null)
+        {
+            Console.WriteLine("User not authenticated.");
+            return;
+        }
+
+        var post = await PostService.EditPost(postId, "Updated Title", "Updated Content", userId);
+        if (post != null)
+        {
+            Console.WriteLine($"Post with ID {postId} has been updated.");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to update post with ID {postId}");
+        }
+    }     
+    
+    private async Task DeletePost(int postId)
+    {
+        if (userId == null)
+        {
+            Console.WriteLine("User not authenticated.");
+            return;
+        }
+
+        bool result = await PostService.DeletePost(postId, userId);
+        if (result)
+        {
+            Console.WriteLine($"Deleted post with ID: {postId}");
+            var postToRemove = Posts.FirstOrDefault(p => p.Id == postId);
+            if (postToRemove != null)
+            {
+                Posts.Remove(postToRemove);
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Failed to delete post with ID: {postId}");
+        }
+    }
+
+    private async Task EditComment(int commentId)
+    {
+        if (userId == null)
+        {
+            Console.WriteLine("User not authenticated.");
+            return;
+        }
+
+        Console.WriteLine($"Editing comment with ID {commentId}");
+    }
+
+    private async Task DeleteComment(int commentId)
+    {
+        if (userId == null)
+        {
+            Console.WriteLine("User not authenticated.");
+            return;
+        }
+
+        Console.WriteLine($"Deleting comment with ID {commentId}");
+    }
+} 
