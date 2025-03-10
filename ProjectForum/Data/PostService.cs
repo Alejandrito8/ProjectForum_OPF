@@ -20,9 +20,12 @@ namespace ProjectForum.Data
                 .ToListAsync();
         }
 
-        public async Task CreatePost(Post post)
+        public async Task<Post> CreatePost(Post post)
         {
-
+            if (string.IsNullOrWhiteSpace(post.Title) || string.IsNullOrWhiteSpace(post.Content))
+            {
+                return null; 
+            }
             var newPost = new Post
             {
                 Title = post.Title,
@@ -33,37 +36,53 @@ namespace ProjectForum.Data
                 Comments = new List<Comment>()
             };
 
+            _context.Posts.Add(newPost);  
+            await _context.SaveChangesAsync(); 
+
+            return newPost; 
+        }
+
+
+        public async Task<bool> DeletePost(int postId)
+        {
+            var post = await _context.Posts.FindAsync(postId);
+            if (post == null)
+            {
+                return false; 
+            }
+
+            _context.Posts.Remove(post);
             await _context.SaveChangesAsync();
+            return true; 
         }
 
-        public async Task DeletePost(int postId)
+        public async Task<bool> AddComment(int postId, string commentContent, string userId)
         {
-            var post = await _context.Posts.FindAsync(postId);
-            if (post != null)
+            if (string.IsNullOrWhiteSpace(commentContent))
             {
-                _context.Posts.Remove(post);
-                await _context.SaveChangesAsync();
+                return false; 
             }
+
+            var post = await _context.Posts.FindAsync(postId);
+            if (post == null)
+            {
+                return false; 
+            }
+
+            var comment = new Comment
+            {
+                Content = commentContent,
+                UserId = userId,
+                PostId = postId,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task AddComment(int postId, string commentContent, string userId)
-        {
-            var post = await _context.Posts.FindAsync(postId);
-            if (post != null)
-            {
-                var comment = new Comment
-                {
-                    Content = commentContent,
-                    UserId = userId,
-                    PostId = postId,
-                    CreatedAt = DateTime.Now
-                };
-                _context.Comments.Add(comment);
-                await _context.SaveChangesAsync();
-            }
-        }
     }
 
 
 }
-//Databas Hanteringen för posts
