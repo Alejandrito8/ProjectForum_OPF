@@ -4,7 +4,9 @@
 @using ProjectForum.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
+
 @rendermode InteractiveServer
+
 @inject PostService PostService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -27,17 +29,20 @@ else
             <h4>@post.Title</h4>
             <p>@post.Content</p>
             <p><small>Published on @post.PublishedOn.ToString("yyyy-MM-dd HH:mm") by @post.User.UserName</small></p>
-            <button class="btn btn-danger" @onclick="() => DeletePost(post.Id)">Delete</button>
-            <button class="btn btn-primary" @onclick="() => NavigateToPost(post.Id)">View</button>
+            <button class="btn btn-outline-primary" @onclick="() => NavigateToPost(post.Id)">View</button>
+            <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete</button>
         </div>
     }
 }
 
+<br>
 <h4>Create a new post</h4>
 
 <input type="text" @bind="newPost.Title" placeholder="Title" class="form-control" />
+<br>
 <textarea @bind="newPost.Content" placeholder="Content" class="form-control"></textarea>
-<button class="btn btn-success" @onclick="CreatePost">Post</button>
+<br>
+<button class="btn btn-outline-success" @onclick="CreatePost">Post</button>
 
 @code {
     [Parameter] public string categoryText { get; set; }
