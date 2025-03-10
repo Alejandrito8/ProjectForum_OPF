@@ -1,16 +1,26 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using ProjectForum.Models;
+using ProjectForum.Data;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Hosting;
+using ProjectForum.Components.Account.Pages.Manage;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Collections.Generic;
 
 namespace ProjectForum.Data
 {
     public class PostService
     {
         private readonly ApplicationDbContext _context;
-        public PostService(ApplicationDbContext context)
+        private readonly UserManager<ApplicationUser> _userManager;
+        public PostService(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
-
         public async Task<List<Post>> GetPostsByCategory(Category category)
         {
             return await _context.Posts
@@ -24,7 +34,7 @@ namespace ProjectForum.Data
         {
             if (string.IsNullOrWhiteSpace(post.Title) || string.IsNullOrWhiteSpace(post.Content))
             {
-                return null; 
+                return null;
             }
             var newPost = new Post
             {
@@ -36,37 +46,84 @@ namespace ProjectForum.Data
                 Comments = new List<Comment>()
             };
 
-            _context.Posts.Add(newPost);  
-            await _context.SaveChangesAsync(); 
+            _context.Posts.Add(newPost);
+            await _context.SaveChangesAsync();
 
-            return newPost; 
+            return newPost;
         }
 
-
-        public async Task<bool> DeletePost(int postId)
+        public async Task<bool> CanModifyPost(int postId, string userId)
         {
             var post = await _context.Posts.FindAsync(postId);
             if (post == null)
             {
-                return false; 
+                return false;
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null && (user.Id == post.UserId || await _userManager.IsInRoleAsync(user, "Admin")))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<Post> EditPost(int postId, string title, string content, string userId)
+        {
+            if (!await CanModifyPost(postId, userId))
+            {
+                return null;
+            }
+
+            var post = await _context.Posts
+                .Where(p => p.Id == postId)
+                .FirstOrDefaultAsync();
+
+            if (post == null)
+            {
+                return null;
+            }
+
+            post.Title = title;
+            post.Content = content;
+
+            _context.Posts.Update(post);
+            await _context.SaveChangesAsync();
+
+            return post;
+        }
+
+
+        public async Task<bool> DeletePost(int postId, string userId)
+        {
+            if (!await CanModifyPost(postId, userId))
+            {
+                return false;
+            }
+
+            var post = await _context.Posts.FindAsync(postId);
+            if (post == null)
+            {
+                return false;
             }
 
             _context.Posts.Remove(post);
             await _context.SaveChangesAsync();
-            return true; 
+            return true;
         }
 
         public async Task<bool> AddComment(int postId, string commentContent, string userId)
         {
             if (string.IsNullOrWhiteSpace(commentContent))
             {
-                return false; 
+                return false;
             }
 
             var post = await _context.Posts.FindAsync(postId);
             if (post == null)
             {
-                return false; 
+                return false;
             }
 
             var comment = new Comment
@@ -86,3 +143,5 @@ namespace ProjectForum.Data
 
 
 }
+
+

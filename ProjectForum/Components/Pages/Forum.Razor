@@ -1,3 +1,5 @@
+
+
 @using ProjectForum.Data
 @using ProjectForum.Models
 @using Microsoft.AspNetCore.Identity
@@ -9,7 +11,6 @@
 @inject NavigationManager Navigation
 
 @attribute [Authorize]
-
 @page "/forum/{categoryText}"
 
 <h3>@category Forum</h3>
@@ -33,10 +34,6 @@ else
 }
 
 <h4>Create a new post</h4>
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <p class="text-danger">@errorMessage</p>
-}
 
 <input type="text" @bind="newPost.Title" placeholder="Title" class="form-control" />
 <textarea @bind="newPost.Content" placeholder="Content" class="form-control"></textarea>
@@ -47,14 +44,13 @@ else
     private Category category;
     private List<Post> posts = new();
     private Post newPost = new();
-    private string errorMessage = string.Empty;
 
     protected override async Task OnParametersSetAsync()
     {
         if (Enum.TryParse<Category>(categoryText, true, out var parsedCategory))
         {
             category = parsedCategory;
-            posts = await PostService.GetPostsByCategory(category);
+            posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
         }
         else
         {
@@ -64,7 +60,6 @@ else
 
     private async Task CreatePost()
     {
-        errorMessage = string.Empty;
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = await UserManager.GetUserAsync(authState.User);
 
@@ -79,27 +74,31 @@ else
         newPost.Category = category;
 
         var savedPost = await PostService.CreatePost(newPost);
-
-
-        posts.Add(new Post
-            {
-                Id = savedPost.Id, 
-                Title = newPost.Title,
-                Content = newPost.Content,
-                PublishedOn = newPost.PublishedOn,
-                User = user,
-                Category = category
-            });
-
-        newPost = new Post();
-        StateHasChanged();
+        if (savedPost != null)
+        {
+            posts.Add(savedPost);
+            newPost = new Post();
+            StateHasChanged();
+        }
     }
 
     private async Task DeletePost(int postId)
     {
-        await PostService.DeletePost(postId);
-        posts.RemoveAll(p => p.Id == postId);
-        StateHasChanged();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var success = await PostService.DeletePost(postId, user.Id);
+        if (success)
+        {
+            posts.RemoveAll(p => p.Id == postId);
+            StateHasChanged();
+        }
     }
 
     private void NavigateToPost(int postId)
@@ -107,3 +106,4 @@ else
         Navigation.NavigateTo($"/post/{postId}");
     }
 }
+
