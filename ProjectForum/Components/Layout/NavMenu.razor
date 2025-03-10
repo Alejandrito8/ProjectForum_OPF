@@ -1,4 +1,4 @@
-﻿@implements IDisposable
+﻿@* @implements IDisposable
 
 @inject NavigationManager NavigationManager
 
@@ -27,27 +27,42 @@
             </Authorized>
         </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="auth">
+                        <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Admin Settings
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-            <NavLink class="btn btn-dark" href="/categories">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Categories
-            </NavLink>
+        <NavLink class="btn btn-dark" href="/categories">
+            <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Categories
+        </NavLink>
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="forumDropdown" role="button" data-bs-toggle="dropdown">
                 Forum
             </a>
             <ul class="dropdown-menu">
-                <li><NavLink class="dropdown-item" href="/forum/Sport">Sport</NavLink></li>
-                <li><NavLink class="dropdown-item" href="/forum/Economy">Economy</NavLink></li>
-                <li><NavLink class="dropdown-item" href="/forum/Science">Science</NavLink></li>
-                <li><NavLink class="dropdown-item" href="/forum/FoodAndDrinks">Food & Drinks</NavLink></li>
-                <li><NavLink class="dropdown-item" href="/forum/Other">Other</NavLink></li>
+                <li>
+                    <NavLink class="dropdown-item" href="/forum/Sport">Sport</NavLink>
+                </li>
+                <li>
+                    <NavLink class="dropdown-item" href="/forum/Economy">Economy</NavLink>
+                </li>
+                <li>
+                    <NavLink class="dropdown-item" href="/forum/Science">Science</NavLink>
+                </li>
+                <li>
+                    <NavLink class="dropdown-item" href="/forum/FoodAndDrinks">Food & Drinks</NavLink>
+                </li>
+                <li>
+                    <NavLink class="dropdown-item" href="/forum/Other">Other</NavLink>
+                </li>
             </ul>
         </li>
+
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
@@ -71,7 +86,7 @@
                         <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
                     </NavLink>
                 </div>
-                
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
                         <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
@@ -101,4 +116,6 @@
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
-}
+} *@
+
+@* Everything in mainlayout *@

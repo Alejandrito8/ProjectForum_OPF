@@ -2,11 +2,12 @@
 
 @using Microsoft.AspNetCore.Authorization
 
-@attribute [Authorize]
+@inject PostService PostService
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Auth</PageTitle>
 
-<h1>You are authenticated</h1>
+<h1>Welcome to the admin settings page!</h1>
 
 <AuthorizeView>
     Hello @context.User.Identity?.Name!
@@ -14,16 +15,4 @@
 
 <p>You as an admin can now see and edit all comments on the forum</p>
 
-
-
-@* Make so that admin can see all comments  *@
-@* Create comment settings  *@
-
-
-@* @if (selectedUser != null) 
-    {
-        <h4>Selected User: @selectedUser.Email</h4>
-        <button class="btn btn-success btn-sm" @onclick="RemoveComment">Remove Comment</button>
-        <button class="btn btn-warning btn-sm" @onclick="BlockProfile">Block Profile</button>
-    }
-} *@
+@* Do so admin can see every post and handle it *@

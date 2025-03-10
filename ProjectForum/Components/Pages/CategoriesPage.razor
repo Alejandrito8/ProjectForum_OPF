@@ -5,15 +5,14 @@
 <h3>Categories</h3>
 <br>
 <div class="categories-menu">
-    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Sport)">Sport</button>
-    <button class="btn btn-light" @onclick="() => NavigateToCategory(Category.Economy)">Economy</button>
-    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Science)">Science</button>
-    <button class="btn btn-light" @onclick="() => NavigateToCategory(Category.FoodAndDrinks)">Food & Drinks</button>
-    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Other)">Other</button>
+    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Sport)"><i>Sport</i></button>
+    <button class="btn btn-light" @onclick="() => NavigateToCategory(Category.Economy)"><i>Economy</i></button>
+    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Science)"><i>Science</i></button>
+    <button class="btn btn-light" @onclick="() => NavigateToCategory(Category.FoodAndDrinks)"><i>Food & Drinks</i></button>
+    <button class="btn btn-dark" @onclick="() => NavigateToCategory(Category.Other)"><i>Other</i></button>
 </div>
 
 @code {
-
     private void NavigateToCategory(Category category)
     {
         Navigation.NavigateTo($"/forum/{category}");
