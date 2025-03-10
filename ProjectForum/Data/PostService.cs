@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectForum.Models;
 
-
-
 namespace ProjectForum.Data
 {
     public class PostService
