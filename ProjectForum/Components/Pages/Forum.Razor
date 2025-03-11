@@ -1,4 +1,4 @@
-﻿@using ProjectForum.Data
+@using ProjectForum.Data
 @using ProjectForum.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
@@ -15,45 +15,52 @@
 @attribute [Authorize]
 @page "/forum/{categoryText}"
 
+<div style="text-align: center;">
 <h3>@category Forum</h3>
+</div>
 
-@if (posts == null || posts.Count == 0)
-{
-    <p>No posts yet in this category. Be the first to post!</p>
-}
-else
-{
-    @foreach (var post in posts)
-    {
-        <div class="post">
-            <h4>@post.Title</h4>
-            <p>@post.Content</p>
-            <p><small>Published on @post.PublishedOn.ToString("yyyy-MM-dd HH:mm") by @post.User.UserName</small></p>
-            @if (canModifyPosts.TryGetValue(post.Id, out var canModify) && canModify)
-            {
-                 <button @onclick="() => ShowEditForm(post)">Edit</button>
-                <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete</button>
-                @if(editingPostId == post.Id)
-                {
-                    <button @onclick="() => SaveChanges(post, User.Id)">Save</button>
-                    <textarea @bind="editTitle"></textarea>
-                    <textarea @bind="editContent"></textarea>
-                }
-
-            }
-        </div>
+<div class="line"></div>
+<style>
+    .line {
+        border-top: 2px solid black;
+        width: 100%;
+        margin: 10px 0;
     }
-}
+</style>
 
-<br>
+<div style="text-align: center;">
 <h4>Create a new post</h4>
+</div>
 
 <input type="text" @bind="newPost.Title" placeholder="Title" class="form-control" />
 <br>
 <textarea @bind="newPost.Content" placeholder="Content" class="form-control"></textarea>
 <br>
 <button class="btn btn-outline-success" @onclick="CreatePost">Post</button>
+<div class="line"></div>
 
+@if (posts == null || posts.Count == 0)
+{
+    <br>
+    <p>No posts yet in this category. Be the first to post!</p>
+}
+else
+{
+    @foreach (var post in posts)
+    {
+        <div style="text-align: center;">
+        <h4>Posts</h4>
+        <br>
+        </div>        
+        <div style="border: 1px solid #000; padding: 10px; width: 50%; margin: 0 auto; text-align: center; background-color: lightgrey;">
+            <h4>Title: @post.Title</h4>
+            <h5>Content: @post.Content</h5>
+            <p><small><i>Published on: @post.PublishedOn.ToString("yyyy-MM-dd HH:mm") By: @post.User.UserName</i></small></p>
+            <button class="btn btn-outline-primary" @onclick="() => NavigateToPost(post.Id)">View Post</button>
+            <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete Post</button>
+        </div>  
+    }
+}
 
 @code {
     [Parameter] public string categoryText { get; set; }
@@ -66,7 +73,6 @@ else
     private int editingPostId = 0;
     private string editTitle = " ";
     private string editContent = " ";
-    private bool showedit = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,72 +102,16 @@ else
         }
     }
 
-    private void ShowEditForm(Post post)
-    {
-        editingPostId = post.Id;
-        editTitle = post.Title;
-        editContent = post.Content;
-    }
-
-    private async Task SaveChanges(Post post, string userID)
-    {
-        if(editingPostId != 0)
-        {
-            var EditPost = await _context.Posts.FirstOrDefaultAsync(p => p.Id == editingPostId);
-            if (EditPost != null && EditPost.UserId == userID)
-            {
-                EditPost.Title = editTitle;
-                EditPost.Content = editContent;
-                await _context.SaveChangesAsync();
-            }
-        }
-        editingPostId = 0;
-        editTitle = " ";
-        editContent = " ";
-    }
-
-
-    protected override async Task OnParametersSetAsync()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-
-        if (user == null)
-        {
-            Navigation.NavigateTo("/login");
-            return;
-        }
-
-        if (Enum.TryParse<Category>(categoryText, true, out var parsedCategory))
-        {
-            category = parsedCategory;
-            posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
-
-            canModifyPosts.Clear();
-            foreach (var post in posts)
-            {
-                canModifyPosts[post.Id] = await PostService.CanModifyPost(post.Id, user.Id);
-            }
-        }
-        else
-        {
-            Navigation.NavigateTo("/categories");
-        }
-    }
-
     private async Task CreatePost()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-
-        if (user == null)
+        if (User == null)
         {
             Navigation.NavigateTo("/login");
             return;
         }
 
         newPost.PublishedOn = DateTime.Now;
-        newPost.UserId = user.Id;
+        newPost.UserId = User.Id;
         newPost.Category = category;
 
         var savedPost = await PostService.CreatePost(newPost);
@@ -176,16 +126,13 @@ else
 
     private async Task DeletePost(int postId)
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-
-        if (user == null)
+        if (User == null)
         {
             Navigation.NavigateTo("/login");
             return;
         }
 
-        var success = await PostService.DeletePost(postId, user.Id);
+        var success = await PostService.DeletePost(postId, User.Id);
         if (success)
         {
             posts.RemoveAll(p => p.Id == postId);
