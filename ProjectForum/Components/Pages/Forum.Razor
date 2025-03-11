@@ -1,9 +1,8 @@
-
-
-@using ProjectForum.Data
+﻿@using ProjectForum.Data
 @using ProjectForum.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
 
 @rendermode InteractiveServer
 
@@ -11,6 +10,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject ApplicationDbContext _context
 
 @attribute [Authorize]
 @page "/forum/{categoryText}"
@@ -29,8 +29,18 @@ else
             <h4>@post.Title</h4>
             <p>@post.Content</p>
             <p><small>Published on @post.PublishedOn.ToString("yyyy-MM-dd HH:mm") by @post.User.UserName</small></p>
-            <button class="btn btn-outline-primary" @onclick="() => NavigateToPost(post.Id)">View</button>
-            <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete</button>
+            @if (canModifyPosts.TryGetValue(post.Id, out var canModify) && canModify)
+            {
+                 <button @onclick="() => ShowEditForm(post)">Edit</button>
+                <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete</button>
+                @if(editingPostId == post.Id)
+                {
+                    <button @onclick="() => SaveChanges(post, User.Id)">Save</button>
+                    <textarea @bind="editTitle"></textarea>
+                    <textarea @bind="editContent"></textarea>
+                }
+
+            }
         </div>
     }
 }
@@ -44,18 +54,94 @@ else
 <br>
 <button class="btn btn-outline-success" @onclick="CreatePost">Post</button>
 
+
 @code {
     [Parameter] public string categoryText { get; set; }
     private Category category;
     private List<Post> posts = new();
     private Post newPost = new();
+    private Dictionary<int, bool> canModifyPosts = new();
+    private ApplicationUser User;
 
-    protected override async Task OnParametersSetAsync()
+    private int editingPostId = 0;
+    private string editTitle = " ";
+    private string editContent = " ";
+    private bool showedit = false;
+
+    protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = await UserManager.GetUserAsync(authState.User);
+
+        if (User == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
         if (Enum.TryParse<Category>(categoryText, true, out var parsedCategory))
         {
             category = parsedCategory;
             posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
+
+            canModifyPosts.Clear();
+            foreach (var post in posts)
+            {
+                canModifyPosts[post.Id] = await PostService.CanModifyPost(post.Id, User.Id);
+            }
+        }
+        else
+        {
+            Navigation.NavigateTo("/categories");
+        }
+    }
+
+    private void ShowEditForm(Post post)
+    {
+        editingPostId = post.Id;
+        editTitle = post.Title;
+        editContent = post.Content;
+    }
+
+    private async Task SaveChanges(Post post, string userID)
+    {
+        if(editingPostId != 0)
+        {
+            var EditPost = await _context.Posts.FirstOrDefaultAsync(p => p.Id == editingPostId);
+            if (EditPost != null && EditPost.UserId == userID)
+            {
+                EditPost.Title = editTitle;
+                EditPost.Content = editContent;
+                await _context.SaveChangesAsync();
+            }
+        }
+        editingPostId = 0;
+        editTitle = " ";
+        editContent = " ";
+    }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        if (Enum.TryParse<Category>(categoryText, true, out var parsedCategory))
+        {
+            category = parsedCategory;
+            posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
+
+            canModifyPosts.Clear();
+            foreach (var post in posts)
+            {
+                canModifyPosts[post.Id] = await PostService.CanModifyPost(post.Id, user.Id);
+            }
         }
         else
         {
@@ -82,6 +168,7 @@ else
         if (savedPost != null)
         {
             posts.Add(savedPost);
+            canModifyPosts[savedPost.Id] = true; 
             newPost = new Post();
             StateHasChanged();
         }
@@ -102,6 +189,7 @@ else
         if (success)
         {
             posts.RemoveAll(p => p.Id == postId);
+            canModifyPosts.Remove(postId);
             StateHasChanged();
         }
     }
@@ -111,4 +199,3 @@ else
         Navigation.NavigateTo($"/post/{postId}");
     }
 }
-

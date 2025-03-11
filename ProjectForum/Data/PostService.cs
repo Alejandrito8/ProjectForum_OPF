@@ -69,32 +69,6 @@ namespace ProjectForum.Data
             return false;
         }
 
-        public async Task<Post> EditPost(int postId, string title, string content, string userId)
-        {
-            if (!await CanModifyPost(postId, userId))
-            {
-                return null;
-            }
-
-            var post = await _context.Posts
-                .Where(p => p.Id == postId)
-                .FirstOrDefaultAsync();
-
-            if (post == null)
-            {
-                return null;
-            }
-
-            post.Title = title;
-            post.Content = content;
-
-            _context.Posts.Update(post);
-            await _context.SaveChangesAsync();
-
-            return post;
-        }
-
-
         public async Task<bool> DeletePost(int postId, string userId)
         {
             if (!await CanModifyPost(postId, userId))
