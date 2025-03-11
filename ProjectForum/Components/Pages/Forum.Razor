@@ -15,44 +15,53 @@
 @attribute [Authorize]
 @page "/forum/{categoryText}"
 
+<div style="text-align: center;">
 <h3>@category Forum</h3>
+</div>
 
-@if (posts == null || posts.Count == 0)
-{
-    <p>No posts yet in this category. Be the first to post!</p>
-}
-else
-{
-    @foreach (var post in posts)
-    {
-        <div class="post">
-            <h4>@post.Title</h4>
-            <p>@post.Content</p>
-            <p><small>Published on @post.PublishedOn.ToString("yyyy-MM-dd HH:mm") by @post.User.UserName</small></p>
-            @if (canModifyPosts.TryGetValue(post.Id, out var canModify) && canModify)
-            {
-                 <button @onclick="() => ShowEditForm(post)">Edit</button>
-                <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete</button>
-                @if(editingPostId == post.Id)
-                {
-                    <button @onclick="() => SaveChanges(post, User.Id)">Save</button>
-                    <textarea @bind="editTitle"></textarea>
-                    <textarea @bind="editContent"></textarea>
-                }
-
-            }
-        </div>
+<div class="line"></div>
+<style>
+    .line {
+        border-top: 2px solid black;
+        width: 100%;
+        margin: 10px 0;
     }
-}
+</style>
 
-<br>
+<div style="text-align: center;">
 <h4>Create a new post</h4>
+</div>
 
 <input type="text" @bind="newPost.Title" placeholder="Title" class="form-control" />
 <br>
 <textarea @bind="newPost.Content" placeholder="Content" class="form-control"></textarea>
 <br>
 <button class="btn btn-outline-success" @onclick="CreatePost">Post</button>
+<div class="line"></div>
+
+@if (posts == null || posts.Count == 0)
+{
+    <br>
+    <p>No posts yet in this category. Be the first to post!</p>
+}
+else
+{
+    @foreach (var post in posts)
+    {
+        <div style="text-align: center;">
+        <h4>Posts</h4>
+        <br>
+        </div>        
+        <div class="post">
+            <h4>@post.Title</h4>
+            <p>@post.Content</p>
+            <p><small>Published on @post.PublishedOn.ToString("yyyy-MM-dd HH:mm") by @post.User.UserName</small></p>
+            <button class="btn btn-outline-primary" @onclick="() => NavigateToPost(post.Id)">View</button>
+            <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete</button>
+        </div>
+    }
+}
+
 
 
 @code {
@@ -199,3 +208,4 @@ else
         Navigation.NavigateTo($"/post/{postId}");
     }
 }
+
