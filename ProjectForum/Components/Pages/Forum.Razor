@@ -52,7 +52,6 @@ else
 
             @if (canModifyPosts.TryGetValue(post.Id, out var canModify) && canModify)
             {
-                @* <button class="btn btn-outline-dark" @onclick="() => CommentPost(post)">Comment Post</button> *@
                 <button class="btn btn-outline-primary" @onclick="() => ShowEditForm(post)">Edit Post</button>
                 <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete Post</button>
 
@@ -89,7 +88,6 @@ else
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         User = await UserManager.GetUserAsync(authState.User);
 
-        // Handle case where user is not found (redirect to login page)
         if (User == null)
         {
             Navigation.NavigateTo("/login");
@@ -99,19 +97,27 @@ else
         if (Enum.TryParse<Category>(categoryText, true, out var parsedCategory))
         {
             category = parsedCategory;
-            posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
-
-            canModifyPosts.Clear();
-            foreach (var post in posts)
-            {
-                canModifyPosts[post.Id] = await PostService.CanModifyPost(post.Id, User.Id);
-            }
+            await LoadPosts();
         }
         else
         {
             Navigation.NavigateTo("/categories");
         }
     }
+
+    private async Task LoadPosts()
+    {
+        posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
+
+        canModifyPosts.Clear();
+        foreach (var post in posts)
+        {
+            canModifyPosts[post.Id] = await PostService.CanModifyPost(post.Id, User.Id);
+        }
+
+        StateHasChanged();
+    }
+
 
     private void ShowEditForm(Post post)
     {
@@ -136,11 +142,6 @@ else
         editTitle = " ";
         editContent = " ";
     }
-private async Task LoadPosts()
-{
-    posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
-    StateHasChanged();
-}
 
     private async Task CreatePost()
     {

@@ -1,4 +1,5 @@
-﻿@using ProjectForum.Data
+﻿
+@using ProjectForum.Data
 @using ProjectForum.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
@@ -13,8 +14,14 @@
 <div style="text-align: center; margin-top: 10px;">
 <button class="btn btn-outline-primary" @onclick="AddComment">Add Comment</button>
 <textarea @bind="commentContent" placeholder="Write your comment..." class="form-control" rows="2" style="margin-top: 5px;"></textarea>
-<button class="btn btn-outline-success" @onclick="LikePost" style="margin-top: 10px;">Like</button>
+<button class="btn btn-outline-success" @onclick="CountLike" style="margin-top: 10px;">Like</button>
+ Like ( @likeCount )
 </div>
+
+@foreach(var comment in comments)
+{
+    <h1>@comment.Content</h1>
+}
  
 @code {
 
@@ -25,7 +32,14 @@
     private ApplicationUser User;
 
     private string commentContent = string.Empty;
- 
+     private List<Comment> comments = new();
+    private int likeCount = 0;
+
+    private async Task CountLike()
+    {
+        likeCount++;
+        await _context.SaveChangesAsync();
+    }
     protected override async Task OnInitializedAsync()
 
     {
@@ -50,6 +64,7 @@
  
         await PostService.AddComment(PostId, commentContent, User.Id);
         await PostUpdated.InvokeAsync(null); 
+        comments.Add(comment);
         commentContent = string.Empty;
     }
 
@@ -60,6 +75,3 @@
     }
 
 }
- 
- 
-
