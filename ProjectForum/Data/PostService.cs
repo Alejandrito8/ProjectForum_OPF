@@ -113,6 +113,20 @@ namespace ProjectForum.Data
             return true;
         }
 
+        public async Task<bool> LikePost(int postId, string userId)
+        {
+            var post = await _context.Posts.FindAsync(postId);
+
+            if (post == null)
+                return false;
+                
+            post.Likes += 1; 
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+
     }
 
 
