@@ -2,6 +2,7 @@
 @using ProjectForum.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
 
 @rendermode InteractiveServer
 
@@ -9,6 +10,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject ApplicationDbContext _context
 
 @attribute [Authorize]
 @page "/forum/{categoryText}"
@@ -50,30 +52,49 @@ else
         <h4>Posts</h4>
         <br>
         </div>        
-        <div class="post">
         <div style="border: 1px solid #000; padding: 10px; width: 50%; margin: 0 auto; text-align: center; background-color: lightgrey;">
             <h4>Title: @post.Title</h4>
             <h5>Content: @post.Content</h5>
             <p><small><i>Published on: @post.PublishedOn.ToString("yyyy-MM-dd HH:mm") By: @post.User.UserName</i></small></p>
             <button class="btn btn-outline-primary" @onclick="() => NavigateToPost(post.Id)">View Post</button>
-            <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete Post</button></div>  
-        </div>
+            <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete Post</button>
+        </div>  
     }
 }
-
 
 @code {
     [Parameter] public string categoryText { get; set; }
     private Category category;
     private List<Post> posts = new();
     private Post newPost = new();
+    private Dictionary<int, bool> canModifyPosts = new();
+    private ApplicationUser User;
 
-    protected override async Task OnParametersSetAsync()
+    private int editingPostId = 0;
+    private string editTitle = " ";
+    private string editContent = " ";
+
+    protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = await UserManager.GetUserAsync(authState.User);
+
+        if (User == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
         if (Enum.TryParse<Category>(categoryText, true, out var parsedCategory))
         {
             category = parsedCategory;
             posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
+
+            canModifyPosts.Clear();
+            foreach (var post in posts)
+            {
+                canModifyPosts[post.Id] = await PostService.CanModifyPost(post.Id, User.Id);
+            }
         }
         else
         {
@@ -83,23 +104,21 @@ else
 
     private async Task CreatePost()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-
-        if (user == null)
+        if (User == null)
         {
             Navigation.NavigateTo("/login");
             return;
         }
 
         newPost.PublishedOn = DateTime.Now;
-        newPost.UserId = user.Id;
+        newPost.UserId = User.Id;
         newPost.Category = category;
 
         var savedPost = await PostService.CreatePost(newPost);
         if (savedPost != null)
         {
             posts.Add(savedPost);
+            canModifyPosts[savedPost.Id] = true; 
             newPost = new Post();
             StateHasChanged();
         }
@@ -107,19 +126,17 @@ else
 
     private async Task DeletePost(int postId)
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-
-        if (user == null)
+        if (User == null)
         {
             Navigation.NavigateTo("/login");
             return;
         }
 
-        var success = await PostService.DeletePost(postId, user.Id);
+        var success = await PostService.DeletePost(postId, User.Id);
         if (success)
         {
             posts.RemoveAll(p => p.Id == postId);
+            canModifyPosts.Remove(postId);
             StateHasChanged();
         }
     }
