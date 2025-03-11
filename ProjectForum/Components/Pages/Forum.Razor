@@ -66,6 +66,7 @@ else
                         <textarea @bind="editContent" placeholder="Edit Content" class="form-control"></textarea>
                     </div>
                 }
+                <CommentsAndLikes PostId="@post.Id" PostUpdated="LoadPosts" />
             }
         </div>
     }
@@ -135,6 +136,11 @@ else
         editTitle = " ";
         editContent = " ";
     }
+private async Task LoadPosts()
+{
+    posts = await PostService.GetPostsByCategory(category) ?? new List<Post>();
+    StateHasChanged();
+}
 
     private async Task CreatePost()
     {
