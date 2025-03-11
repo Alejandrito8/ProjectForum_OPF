@@ -49,7 +49,7 @@
                             <td>@post.User.UserName</td>
                             <td>@post.PublishedOn.ToString("yyyy-MM-dd HH:mm")</td>
                             <td>
-                                <button @onclick="() => EditPost(post.Id)" class="btn btn-primary btn-sm">Edit Post</button>
+                                @* <button @onclick="() => EditPost(post.Id)" class="btn btn-primary btn-sm">Edit Post</button> *@
                                 <button @onclick="() => DeletePost(post.Id)" class="btn btn-danger btn-sm">Delete Post</button>
                             </td>
                         </tr>
@@ -77,24 +77,24 @@
             Posts.AddRange(postsForCategory);
         }
     }
-    private async Task EditPost(int postId) //I DENNA SKA MAN KUNNA RADERA OCH VISA ALLA KOMMENTARER
-    {
-        if (userId == null)
-        {
-            Console.WriteLine("User not authenticated.");
-            return;
-        }
+    // private async Task EditPost(int postId) I DENNA SKA MAN KUNNA RADERA OCH VISA ALLA KOMMENTARER
+    // {
+    //     if (userId == null)
+    //     {
+    //         Console.WriteLine("User not authenticated.");
+    //         return;
+    //     }
 
-        var post = await PostService.EditPost(postId, "Updated Title", "Updated Content", userId); //FIXA DENNA
-        if (post != null)
-        {
-            Console.WriteLine($"Post with ID {postId} has been updated.");
-        }
-        else
-        {
-            Console.WriteLine($"Failed to update post with ID {postId}");
-        }
-    }
+    //     var post = await PostService.EditPost(postId, "Updated Title", "Updated Content", userId); FIXA DENNA
+    //     if (post != null)
+    //     {
+    //         Console.WriteLine($"Post with ID {postId} has been updated.");
+    //     }
+    //     else
+    //     {
+    //         Console.WriteLine($"Failed to update post with ID {postId}");
+    //     }
+    // }
 
     private async Task DeletePost(int postId)
     {
