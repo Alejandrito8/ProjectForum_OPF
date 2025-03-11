@@ -13,16 +13,12 @@
 
 <PageTitle>Admin Settings</PageTitle>
 
-<h1>Welcome to the admin settings page!</h1>
-
-<AuthorizeView>
-    Hello @context.User.Identity?.Name!
-</AuthorizeView>
-
-<h5>You as an admin can now see and edit all comments on the forum</h5>
+<div style="text-align: center;">
+    <h1>Welcome to the admin settings page!</h1>
+    <h5>You as an admin can now see and edit all comments on the forum</h5>
+</div>
 
 <div class="line"></div>
-
 <style>
     .line {
         border-top: 2px solid black;
@@ -40,7 +36,6 @@
                 <thead>
                     <tr>
                         <th><u>Post</u></th>
-                        <th><u>Comments</u></th>
                         <th><u>Author</u></th>
                         <th><u>Published</u></th>
                         <th><u>Settings</u></th>
@@ -51,18 +46,7 @@
                     {
                         <tr>
                             <td>@post.Title</td>
-                            <td>
-                                <ul>
-                                    @foreach (var comment in post.Comments)
-                                    {
-                                        <li>@comment.Content
-                                            <button @onclick="() => EditComment(comment.Id)" class="btn btn-primary btn-sm">Edit</button>
-                                            <button @onclick="() => DeleteComment(comment.Id)" class="btn btn-danger btn-sm">Delete</button>
-                                        </li>
-                                    }
-                                </ul>
-                            </td>
-                            <td>@post.User.FirstName @post.User.LastName</td>
+                            <td>@post.User.UserName</td>
                             <td>@post.PublishedOn.ToString("yyyy-MM-dd HH:mm")</td>
                             <td>
                                 <button @onclick="() => EditPost(post.Id)" class="btn btn-primary btn-sm">Edit Post</button>
@@ -76,24 +60,24 @@
     }
 </div>
 
+
 @code {
     private List<Post> Posts = new List<Post>();
     private string userId;
 
     protected override async Task OnInitializedAsync()
     {
-        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync(); 
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authenticationState.User;
         userId = user?.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-        // Fetch posts for each category
         foreach (var category in Enum.GetValues(typeof(Category)).Cast<Category>())
         {
             var postsForCategory = await PostService.GetPostsByCategory(category);
             Posts.AddRange(postsForCategory);
         }
     }
-     private async Task EditPost(int postId)
+    private async Task EditPost(int postId) //I DENNA SKA MAN KUNNA RADERA OCH VISA ALLA KOMMENTARER
     {
         if (userId == null)
         {
@@ -101,7 +85,7 @@
             return;
         }
 
-        var post = await PostService.EditPost(postId, "Updated Title", "Updated Content", userId);
+        var post = await PostService.EditPost(postId, "Updated Title", "Updated Content", userId); //FIXA DENNA
         if (post != null)
         {
             Console.WriteLine($"Post with ID {postId} has been updated.");
@@ -110,8 +94,8 @@
         {
             Console.WriteLine($"Failed to update post with ID {postId}");
         }
-    }     
-    
+    }
+
     private async Task DeletePost(int postId)
     {
         if (userId == null)
@@ -157,4 +141,4 @@
 
         Console.WriteLine($"Deleting comment with ID {commentId}");
     }
-} 
+}
