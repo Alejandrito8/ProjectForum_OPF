@@ -1,1 +1,66 @@
-﻿
+
+@using ProjectForum.Data
+@using ProjectForum.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore 
+@rendermode InteractiveServer
+@inject PostService PostService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@inject ApplicationDbContext _context
+ 
+<div style="text-align: center; margin-top: 10px;">
+<button class="btn btn-outline-primary" @onclick="AddComment">Add Comment</button>
+<textarea @bind="commentContent" placeholder="Write your comment..." class="form-control" rows="2" style="margin-top: 5px;"></textarea>
+<button class="btn btn-outline-success" @onclick="LikePost" style="margin-top: 10px;">Like</button>
+</div>
+ 
+@code {
+
+    [Parameter] public int PostId { get; set; }
+
+    [Parameter] public EventCallback PostUpdated { get; set; }
+ 
+    private ApplicationUser User;
+
+    private string commentContent = string.Empty;
+ 
+    protected override async Task OnInitializedAsync()
+
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        User = await UserManager.GetUserAsync(authState.User);
+    }
+ 
+    private async Task AddComment()
+    {
+        if (string.IsNullOrEmpty(commentContent))
+        {
+            return;
+        }
+        var comment = new Comment
+        {
+            Content = commentContent,
+            PostId = PostId,
+            UserId = User.Id,
+            CreatedAt = DateTime.Now
+        };
+ 
+        await PostService.AddComment(PostId, commentContent, User.Id);
+        await PostUpdated.InvokeAsync(null); 
+        commentContent = string.Empty;
+    }
+
+    private async Task LikePost()
+    {
+        await PostService.LikePost(PostId, User.Id);
+        await PostUpdated.InvokeAsync(null);
+    }
+
+}
+ 
+ 
+
