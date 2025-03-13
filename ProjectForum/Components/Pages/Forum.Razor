@@ -3,15 +3,12 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
-
 @rendermode InteractiveServer
-
 @inject PostService PostService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 @inject ApplicationDbContext _context
-
 @attribute [Authorize]
 @page "/forum/{categoryText}"
 
@@ -36,6 +33,15 @@
 <br>
 <button class="btn btn-outline-success" @onclick="CreatePost">Post</button>
 <div class="line"></div>
+
+<div style="text-align: center; margin-bottom: 10px;">
+    <label for="sortOptions">Sort by: </label>
+    <select id="sortOptions" @bind="selectedFilter" class="form-control" style="width: 200px; display: inline-block;">
+        <option value="latest">Latest Posts</option>
+        <option value="likes">Most Liked</option>
+    </select>
+    <button class="btn btn-outline-primary" @onclick="LoadPosts">Apply</button>
+</div>
 
 @if (posts == null || posts.Count == 0)
 {
@@ -191,4 +197,21 @@ else
         Navigation.NavigateTo($"/post/{postId}");
     }
     
+    private string selectedFilter = "latest"; // Default sorteringsval
+    private async Task SortPost()
+    {
+        posts = await PostService.GetPostsByCategory(category);
+
+        if (selectedFilter == "likes")
+        {
+            posts = posts.OrderByDescending(p => p.Likes ?? 0).ToList();
+        }
+        else
+        {
+            posts = posts.OrderByDescending(p => p.PublishedOn).ToList(); 
+        }
+        StateHasChanged();
+    }
 }
+
+

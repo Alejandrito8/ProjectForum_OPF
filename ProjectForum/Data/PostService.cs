@@ -118,17 +118,13 @@ namespace ProjectForum.Data
             var post = await _context.Posts.FindAsync(postId);
 
             if (post == null)
-                return false;
-                
+                return false;   
             post.Likes += 1; 
-
             await _context.SaveChangesAsync();
             return true;
         }
 
-
     }
-
 
 }
 
