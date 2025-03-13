@@ -15,7 +15,12 @@
 @attribute [Authorize]
 @page "/forum/{categoryText}"
 
+
 <h3 style="text-align: center;">@category Forum</h3>
+
+<div style="text-align: center;">
+    <h4>Create a new post</h4>
+</div>
 
 <div class="line"></div>
 <style>
@@ -25,10 +30,6 @@
         margin: 10px 0;
     }
 </style>
-
-<div style="text-align: center;">
-    <h4>Create a new post</h4>
-</div>
 
 <input type="text" @bind="newPost.Title" placeholder="Title" class="form-control" />
 <br>
@@ -43,36 +44,40 @@
 }
 else
 {
-    @foreach (var post in posts)
-    {
-        <div style="border: 1px solid #000; padding: 10px; width: 50%; margin: 0 auto; text-align: center; background-color: lightgrey;">
-        <div style="display: flex; justify-content: space-between;">
+
+@foreach (var post in posts)
+{
+    <div style="border: 1px solid #000; padding: 20px; width: 70%; margin: 0 auto; background-color: lightgrey;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
             <small><i><span style="margin-right: 10px;">👤</span>@post.User.UserName</i></small>
             <small><i><span style="margin-right: 10px;">📅</span>@post.PublishedOn.ToString("yyyy-MM-dd, HH:mm")</i></small>
-        </div>       
-    
-            <h4>@post.Title</h4>
-            <p>@post.Content</p>
+        </div>      
 
-            @if (canModifyPosts.TryGetValue(post.Id, out var canModify) && canModify)
-            {
-                <button class="btn btn-outline-primary" @onclick="() => ShowEditForm(post)">Edit Post</button>
-                <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete Post</button>
-                
-                @if (editingPostId == post.Id)
-                {
-                    <div>
-                        <br>
-                        <h5>Edit Post</h5>
-                        <button class="btn btn-outline-success" @onclick="() => SaveChanges(post, User.Id)">Save Post</button>
-                        <textarea @bind="editTitle" placeholder="Edit Title" class="form-control"></textarea>
-                        <textarea @bind="editContent" placeholder="Edit Content" class="form-control"></textarea>
-                    </div>
-                }
-                <CommentsAndLikes PostId="@post.Id" PostUpdated="LoadPosts" />
-            }
+        <br>
+
+        <h4 style="text-align: center;">@post.Title</h4>
+        <p style="text-align: center;">@post.Content</p>
+    </div>
+        
+    @if (canModifyPosts.TryGetValue(post.Id, out var canModify) && canModify)
+    {
+        <div style="width: 70%; margin: 0 auto; text-align: right; margin-top: 10px; margin-bottom: 20px;">
+            <button class="btn btn-outline-primary" style="margin-right: 10px;" @onclick="() => ShowEditForm(post)">Edit Post</button>
+            <button class="btn btn-outline-danger" @onclick="() => DeletePost(post.Id)">Delete Post</button>
         </div>
+
+        @if (editingPostId == post.Id)
+        {
+            <div style="width: 70%; margin: 0 auto; text-align: left; margin-bottom: 20px;">
+                <h5>Edit Post</h5>
+                <input type="text" @bind="editTitle" placeholder="Edit Title" class="form-control" style="margin-bottom: 10px;" />
+                <textarea @bind="editContent" placeholder="Edit Content" class="form-control" rows="3" style="margin-bottom: 10px;"></textarea>
+                <button class="btn btn-outline-success" @onclick="() => SaveChanges(post, User.Id)">Save Post</button>
+            </div>
+        }
     }
+    <CommentsAndLikes PostId="@post.Id" PostUpdated="LoadPosts" />
+  }
 }
 
 @code {

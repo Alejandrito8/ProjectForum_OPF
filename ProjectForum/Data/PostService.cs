@@ -87,6 +87,48 @@ namespace ProjectForum.Data
             return true;
         }
 
+
+
+        public async Task<bool> CanModifyComment(int commentId, string userId)
+        {
+            var comment = await _context.Comments.FindAsync(commentId);
+
+            if (comment == null)
+            {
+                return false; 
+            }
+
+            return comment.UserId == userId; 
+        }
+
+        public async Task<bool> DeleteComment(int commentId, string userId)
+        {
+            if (!await CanModifyComment(commentId, userId))
+            {
+                return false;
+            }
+
+            var comment = await _context.Comments.FindAsync(commentId);
+            if (comment == null)
+            {
+                return false; 
+            }
+
+            _context.Comments.Remove(comment);
+            await _context.SaveChangesAsync();
+
+            return true; 
+        }
+
+
+public async Task<List<Comment>> GetAllComments()
+{
+    return await _context.Comments
+        .Include(c => c.User)
+        .Include(c => c.Post)
+        .ToListAsync();
+}
+
         public async Task<bool> AddComment(int postId, string commentContent, string userId)
         {
             if (string.IsNullOrWhiteSpace(commentContent))
@@ -113,18 +155,21 @@ namespace ProjectForum.Data
             return true;
         }
 
-        public async Task<bool> LikePost(int postId, string userId)
-        {
-            var post = await _context.Posts.FindAsync(postId);
+public async Task<bool> LikePost(int postId, string userId)
+{
+    var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
 
-            if (post == null)
-                return false;
-                
-            post.Likes += 1; 
+    if (post == null)
+        return false;
 
-            await _context.SaveChangesAsync();
-            return true;
-        }
+    post.Likes++;
+
+    await _context.SaveChangesAsync();
+
+    return true;
+}
+
+
 
 
     }

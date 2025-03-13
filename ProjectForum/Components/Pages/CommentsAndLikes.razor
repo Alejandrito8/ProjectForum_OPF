@@ -1,59 +1,128 @@
-﻿
-@using ProjectForum.Data
+﻿@using ProjectForum.Data
 @using ProjectForum.Models
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.EntityFrameworkCore 
+@using Microsoft.EntityFrameworkCore
+
 @rendermode InteractiveServer
+
 @inject PostService PostService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 @inject ApplicationDbContext _context
- 
-<div style="text-align: center; margin-top: 10px;">
-<button class="btn btn-outline-primary" @onclick="AddComment">Add Comment</button>
-<textarea @bind="commentContent" placeholder="Write your comment..." class="form-control" rows="2" style="margin-top: 5px;"></textarea>
-<button class="btn btn-outline-success" @onclick="CountLike" style="margin-top: 10px;">Like</button>
- Like ( @likeCount )
+
+<div style="width: 70%; margin: 0 auto; text-align: left; margin-top: 10px; margin-bottom: 20px;">
+    <button class="btn btn-outline-secondary" @onclick="CommentAddForm">💬</button>
+    <button class="btn btn-outline-secondary" @onclick="CountLike">
+        ❤️ @likeCount
+    </button>
 </div>
 
-@foreach(var comment in comments)
+@if (showCommentForm)
 {
-    <h1>@comment.Content</h1>
+    <div style="width: 70%; margin: 0 auto; text-align: left; margin-top: 10px; margin-bottom: 20px;">
+        <textarea @bind="commentContent" placeholder="Write your comment..." class="form-control" rows="3"></textarea>
+        <br>
+        <button class="btn btn-outline-success" @onclick="AddComment">Save Comment</button>
+    </div>
 }
- 
+
+@foreach (var comment in comments)
+{
+    <div class="bg-light p-2 rounded" style="margin-bottom: 10px; width: 70%; margin: 0 auto;">
+        <i>👤 <span class="badge bg-primary">@comment.User.UserName</span> </i>
+        <small><i><span class="margin-right" style="float: right;"> 📅 @comment.CreatedAt.ToString("yyyy-MM-dd, HH:mm")</span></i></small>
+
+        <div>@comment.Content</div>
+
+        <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="() => ToggleReplyForm(comment.Id)">Reply</button>
+
+        @if (replyForms.ContainsKey(comment.Id) && replyForms[comment.Id])
+        {
+            <div style="margin-left: 20px; margin-top: 10px;">
+                <textarea @bind="replyContent" placeholder="Write your reply..." class="form-control" rows="2"></textarea>
+                <button class="btn btn-outline-primary mt-2" @onclick="() => AddReply(comment.Id)">Post Reply</button>
+            </div>
+        }
+
+        @foreach (var reply in comment.Replies)
+        {
+            <div style="margin-left: 30px; border-left: 2px solid gray; padding-left: 10px; margin-top: 10px;">
+                <p><small><i>Reply to (@reply.ParentComment.User.UserName)</i></small></p>
+                <p><strong>@reply.User.UserName</strong>: @reply.Content</p>
+            </div>
+        }
+
+        @if (comment.UserId == User.Id)
+        {
+            <br>
+            <button class="btn btn-outline-danger mt-2" @onclick="() => DeleteComment(comment.Id)">Delete Comment</button>
+        }
+    </div>
+}
+
 @code {
 
     [Parameter] public int PostId { get; set; }
-
     [Parameter] public EventCallback PostUpdated { get; set; }
- 
-    private ApplicationUser User;
 
-    private string commentContent = string.Empty;
-     private List<Comment> comments = new();
+    private ApplicationUser User;
+    private string commentContent = "";
+    private string replyContent = "";
+    private bool showCommentForm = false;
+    private List<Comment> comments = new();
+    private Dictionary<int, bool> replyForms = new();
     private int likeCount = 0;
 
-    private async Task CountLike()
-    {
-        likeCount++;
-        await _context.SaveChangesAsync();
-    }
     protected override async Task OnInitializedAsync()
-
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-
         User = await UserManager.GetUserAsync(authState.User);
+
+        await LoadComments();
+        await LoadLikes();
     }
- 
+
+private async Task CountLike()
+{
+    var success = await PostService.LikePost(PostId, User.Id);
+
+    if (success)
+    {
+        likeCount++; 
+        await PostUpdated.InvokeAsync(null);
+    }
+    else
+    {
+        Console.WriteLine("Något gick fel vid Like!");
+    }
+}
+
+private async Task LoadLikes()
+{
+    var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == PostId);
+
+    if (post != null)
+    {
+        likeCount = post.Likes; 
+    }
+}
+    private void ToggleCommentForm()
+    {
+        showCommentForm = !showCommentForm;
+    }
+
+    private async Task CommentAddForm()
+    {
+        showCommentForm = !showCommentForm;
+    }
+
     private async Task AddComment()
     {
-        if (string.IsNullOrEmpty(commentContent))
-        {
+        if (string.IsNullOrWhiteSpace(commentContent))
             return;
-        }
+
         var comment = new Comment
         {
             Content = commentContent,
@@ -61,11 +130,88 @@
             UserId = User.Id,
             CreatedAt = DateTime.Now
         };
- 
+
         await PostService.AddComment(PostId, commentContent, User.Id);
-        await PostUpdated.InvokeAsync(null); 
-        comments.Add(comment);
+        await LoadComments();
         commentContent = string.Empty;
+        showCommentForm = false;
+
+        await PostUpdated.InvokeAsync(null);
+    }
+
+    private void ToggleReplyForm(int commentId)
+    {
+        if (replyForms.ContainsKey(commentId))
+            replyForms[commentId] = !replyForms[commentId];
+        else
+            replyForms[commentId] = true;
+    }
+
+    private async Task AddReply(int parentCommentId)
+    {
+        if (string.IsNullOrWhiteSpace(replyContent))
+            return;
+
+        var reply = new Comment
+        {
+            Content = replyContent,
+            PostId = PostId,
+            UserId = User.Id,
+            CreatedAt = DateTime.Now,
+            CommentId = parentCommentId
+        };
+
+        _context.Comments.Add(reply);
+        await _context.SaveChangesAsync();
+
+        var parentComment = comments.FirstOrDefault(c => c.Id == parentCommentId);
+        if (parentComment != null)
+        {
+            parentComment.Replies = await _context.Comments
+                .Where(c => c.CommentId == parentCommentId)
+                .Include(c => c.User)
+                .ToListAsync();
+        }
+
+        replyContent = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task LoadComments()
+    {
+        comments = await _context.Comments
+            .Where(c => c.PostId == PostId && c.CommentId == null)
+            .Include(c => c.User)
+            .Include(c => c.Replies)
+                .ThenInclude(r => r.User)
+            .ToListAsync();
+
+        StateHasChanged();
+    }
+
+    private async Task DeleteComment(int commentId)
+    {
+        if (User == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var success = await PostService.DeleteComment(commentId, User.Id);
+        if (success)
+        {
+            comments.RemoveAll(c => c.Id == commentId);
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Failed to delete comment.");
+        }
+    }
+
+    private void NavigateToComment(int commentId)
+    {
+        Navigation.NavigateTo($"/comment/{commentId}");
     }
 
     private async Task LikePost()
@@ -73,5 +219,4 @@
         await PostService.LikePost(PostId, User.Id);
         await PostUpdated.InvokeAsync(null);
     }
-
 }
