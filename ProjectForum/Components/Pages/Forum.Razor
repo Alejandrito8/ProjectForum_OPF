@@ -37,11 +37,8 @@
 
 <div style="text-align: center; margin-bottom: 10px;">
     <label for="sortOptions">Sort by: </label>
-    <select id="sortOptions" @bind="selectedFilter" class="form-control" style="width: 200px; display: inline-block;">
-        <option value="latest">Latest Posts</option>
-        <option value="likes">Most Liked</option>
-    </select>
-    <button class="btn btn-outline-primary" @onclick="LoadPosts">Apply</button>
+    <button class="btn btn-outline-primary" @onclick="SortPost">Sort by date</button>
+    <button class="btn btn-outline-primary" @onclick="SortLikedPost">Sort By Likes</button>
 </div>
 
 @if (posts == null || posts.Count == 0)
@@ -63,6 +60,9 @@ else
 
         <h4 style="text-align: center;">@post.Title</h4>
         <p style="text-align: center;">@post.Content</p>
+        <button class="btn btn-outline-secondary" @onclick="() => LikePost(post.Id)">
+        ❤️ @post.Likes
+    </button>
     </div>
         
     @if (canModifyPosts.TryGetValue(post.Id, out var canModify) && canModify)
@@ -203,20 +203,38 @@ else
     }
     
     private string selectedFilter = "latest"; // Default sorteringsval
-    private async Task SortPost()
-    {
-        posts = await PostService.GetPostsByCategory(category);
+private async Task SortPost()
+{
+    posts = await PostService.GetPostsByCategory(category);
+    
+    posts = posts.OrderByDescending(p => p.PublishedOn).ToList(); 
+    StateHasChanged();
+}
 
-        if (selectedFilter == "likes")
+public async Task SortLikedPost()
+{
+    posts = await _context.Posts
+        .Where(p => p.Category == category) 
+        .OrderByDescending(p => p.Likes) 
+        .ToListAsync();
+ 
+    StateHasChanged();
+}
+private async Task LikePost(int postId)
+    {
+        if (User == null)
         {
-            posts = posts.OrderByDescending(p => p.Likes ?? 0).ToList();
+            Navigation.NavigateTo("/login");
+            return;
         }
-        else
+ 
+        var success = await PostService.LikePost(postId, User.Id);
+        if (success)
         {
-            posts = posts.OrderByDescending(p => p.PublishedOn).ToList(); 
+            await LoadPosts();
         }
-        StateHasChanged();
     }
+
 }
 
 

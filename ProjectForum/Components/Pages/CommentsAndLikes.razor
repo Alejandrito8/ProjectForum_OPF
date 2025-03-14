@@ -14,9 +14,9 @@
 
 <div style="width: 70%; margin: 0 auto; text-align: left; margin-top: 10px; margin-bottom: 20px;">
     <button class="btn btn-outline-secondary" @onclick="CommentAddForm">💬</button>
-    <button class="btn btn-outline-secondary" @onclick="CountLike">
+    @* <button class="btn btn-outline-secondary" @onclick="">
         ❤️ @likeCount
-    </button>
+    </button> *@
 </div>
 
 @if (showCommentForm)
@@ -68,6 +68,7 @@
     [Parameter] public EventCallback PostUpdated { get; set; }
 
     private ApplicationUser User;
+    private Post post;
     private string commentContent = "";
     private string replyContent = "";
     private bool showCommentForm = false;
@@ -82,9 +83,7 @@
 
         await LoadComments();
         await LoadLikes();
-    }
-
-private async Task CountLike()
+    } private async Task CountLike()
 {
     var success = await PostService.LikePost(PostId, User.Id);
 
