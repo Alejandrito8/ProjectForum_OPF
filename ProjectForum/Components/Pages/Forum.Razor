@@ -3,15 +3,12 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
-
 @rendermode InteractiveServer
-
 @inject PostService PostService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 @inject ApplicationDbContext _context
-
 @attribute [Authorize]
 @page "/forum/{categoryText}"
 
@@ -38,6 +35,12 @@
 <button class="btn btn-outline-success" @onclick="CreatePost">Post</button>
 <div class="line"></div>
 
+<div style="text-align: center; margin-bottom: 10px;">
+    <label for="sortOptions">Sort by: </label>
+    <button class="btn btn-outline-primary" @onclick="SortPost">Sort by date</button>
+    <button class="btn btn-outline-primary" @onclick="SortLikedPost">Sort By Likes</button>
+</div>
+
 @if (posts == null || posts.Count == 0)
 {
     <p>No posts yet in this category. Be the first to post!</p>
@@ -57,6 +60,9 @@ else
 
         <h4 style="text-align: center;">@post.Title</h4>
         <p style="text-align: center;">@post.Content</p>
+        <button class="btn btn-outline-secondary" @onclick="() => LikePost(post.Id)">
+        ❤️ @post.Likes
+    </button>
     </div>
         
     @if (canModifyPosts.TryGetValue(post.Id, out var canModify) && canModify)
@@ -196,4 +202,39 @@ else
         Navigation.NavigateTo($"/post/{postId}");
     }
     
+    private string selectedFilter = "latest"; // Default sorteringsval
+private async Task SortPost()
+{
+    posts = await PostService.GetPostsByCategory(category);
+    
+    posts = posts.OrderByDescending(p => p.PublishedOn).ToList(); 
+    StateHasChanged();
 }
+
+public async Task SortLikedPost()
+{
+    posts = await _context.Posts
+        .Where(p => p.Category == category) 
+        .OrderByDescending(p => p.Likes) 
+        .ToListAsync();
+ 
+    StateHasChanged();
+}
+private async Task LikePost(int postId)
+    {
+        if (User == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+ 
+        var success = await PostService.LikePost(postId, User.Id);
+        if (success)
+        {
+            await LoadPosts();
+        }
+    }
+
+}
+
+

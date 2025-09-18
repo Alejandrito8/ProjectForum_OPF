@@ -11,7 +11,7 @@ using ProjectForum.Data;
 namespace ProjectForum.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250304133544_InitialCreate")]
+    [Migration("20250314162320_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -224,7 +224,7 @@ namespace ProjectForum.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CommentId")
+                    b.Property<int?>("CommentId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Content")
@@ -237,10 +237,8 @@ namespace ProjectForum.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -249,7 +247,7 @@ namespace ProjectForum.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
@@ -260,12 +258,15 @@ namespace ProjectForum.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Catagory")
+                    b.Property<int>("Category")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Likes")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("PublishedOn")
                         .HasColumnType("TEXT");
@@ -274,15 +275,12 @@ namespace ProjectForum.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Posts");
                 });
@@ -342,9 +340,7 @@ namespace ProjectForum.Migrations
                 {
                     b.HasOne("ProjectForum.Models.Comment", "ParentComment")
                         .WithMany("Replies")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CommentId");
 
                     b.HasOne("ProjectForum.Models.Post", "Post")
                         .WithMany("Comments")
@@ -354,7 +350,9 @@ namespace ProjectForum.Migrations
 
                     b.HasOne("ProjectForum.Data.ApplicationUser", "User")
                         .WithMany("Comment")
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ParentComment");
 
@@ -367,7 +365,7 @@ namespace ProjectForum.Migrations
                 {
                     b.HasOne("ProjectForum.Data.ApplicationUser", "User")
                         .WithMany("Posts")
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
